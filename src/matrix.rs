@@ -3,13 +3,14 @@ use std::{fmt::Display, ops::{AddAssign, MulAssign, SubAssign}};
 
 use crate::vector::Vector;
 
+use crate::fma::Fma;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
 
-impl<K: Clone> Matrix<K> {
+impl<K: Clone + Fma> Matrix<K> {
     pub fn from(matrix: Vec<Vec<K>>) -> Self {
         for i in 0..matrix.len() {
             if matrix[i].len() != matrix[0].len() {
@@ -37,7 +38,7 @@ impl<K: Clone> Matrix<K> {
     }
 }
 
-impl<K: AddAssign + SubAssign + MulAssign + Clone> Matrix<K> {
+impl<K: AddAssign + SubAssign + MulAssign + Clone + Fma> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
