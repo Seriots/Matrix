@@ -2,16 +2,15 @@
 
 use std::{fmt::Display, ops::{AddAssign, MulAssign, SubAssign}};
 
-use crate::{fma, matrix::Matrix};
+use crate::Matrix;
 use crate::fma::Fma;
-
 
 #[derive(Debug, Clone, Default)]
 pub struct Vector<K> {
     pub vector: Vec<K>,
 }
 
-impl<K: Clone + Fma> Vector<K> {
+impl<K: Clone + Default + Fma> Vector<K> {
     pub fn from(array: Vec<K>) -> Self {
         Self { vector: array }
     }
@@ -37,7 +36,7 @@ impl<K: Clone + Fma> Vector<K> {
     }    
 }
 
-impl<K: AddAssign + SubAssign + MulAssign + Clone + Fma> Vector<K> {
+impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Vector<K> {
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
             panic!("Size are different")
@@ -63,7 +62,7 @@ impl<K: AddAssign + SubAssign + MulAssign + Clone + Fma> Vector<K> {
     }
 }
 
-impl<K: Display + Clone + Fma> Display for Vector<K> {
+impl<K: Clone + Default + Fma + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut all: String = String::new();
         let mut max_size = 0;
@@ -83,14 +82,3 @@ impl<K: Display + Clone + Fma> Display for Vector<K> {
     }
 }
 
-pub fn linear_combination<K: Clone + Fma + Default>(u: &[Vector<K>], coefs: &[K]) -> Vector<K> {
-    let mut mu = Vector::from(vec![K::default(); u[0].size()]);
-
-    for i in 0..u.len() {
-      for j in 0..u[0].size() {
-        // mu.vector[j] = Fma::fma(u[i].vector[j].clone(), coefs[i].clone(), mu.vector[j].clone());
-        mu.vector[j].sfma(u[i].vector[j].clone(), coefs[i].clone());
-      }  
-    } 
-    return mu;
-}

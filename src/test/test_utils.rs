@@ -2,7 +2,7 @@
 #[cfg(test)]
 #[test]
 fn test_basics_matrix_vector() {
-    use crate::matrix::Matrix;
+    use crate::basics::Matrix;
 
     let u = Matrix::from(vec![
         vec![1., 2.],
