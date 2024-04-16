@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
-use std::{fmt::Display, ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign}};
+use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign}};
+
+use num_traits::pow;
 
 use crate::Matrix;
 use crate::fma::Fma;
@@ -34,10 +36,12 @@ impl<K: Clone + Default + Fma> Vector<K> {
             matrix[i].append(&mut self.vector[(i*shape.1)..(i*shape.1 + shape.0)].to_vec());
         }
         return Matrix::from(matrix)
-    }    
+    }
 }
 
-impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Vector<K> {
+
+impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Vector<K>
+where f32: From<K> {
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
             panic!("Size are different")
@@ -61,6 +65,51 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Vector<K> {
             self.vector[i] *= a.clone(); 
         }
     }
+
+    pub fn dot(&self, v: Self) -> K {
+        let mut result: K = K::default();
+
+        for i in 0..self.size() {
+            result.sfma(self.vector[i].clone(), v.vector[i].clone());
+        }
+        return result;
+    }
+
+    //Taxicab norm or Manhattan norm (||v||1)
+    pub fn norm_1(&self) -> f32 {
+        let mut res = f32::default();
+        
+        for i in 0..self.size() {
+            let v: f32 = self.vector[i].clone().into();
+            res += v.max(-v);
+        }
+
+        return res;
+    }
+
+    //Euclidean norm (||v||2)
+    pub fn norm(&self) -> f32 {
+        let mut res = K::default();
+
+        for i in 0..self.size() {
+            res.sfma(self.vector[i].clone(), self.vector[i].clone());
+        }
+        return f32::powf(res.into(), 0.5);
+    }
+
+    // Supremum norm (||v||∞)
+    pub fn norm_inf(&self) -> f32 {
+
+        let mut res = f32::default();
+        
+        for i in 0..self.size() {
+            let v: f32 = self.vector[i].clone().into();
+            res = res.max(v.max(-v));
+        }
+
+        return res;
+    }
+
 }
 
 impl<K: Clone + Default + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32> > Lerp for Vector<K> {

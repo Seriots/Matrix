@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 #[test]
-fn linear_combination_ex01() {
+fn linear_interpolation() {
     use crate::basics::Vector;
     use crate::basics::linear_interpolation::lerp;
     use crate::Matrix;

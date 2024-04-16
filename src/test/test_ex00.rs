@@ -1,7 +1,7 @@
 
 #[cfg(test)]
 #[test]
-fn vector_ex00() {
+fn vector() {
     use crate::basics::Vector;
 
     //println!("===============Vector Ex00===============");
@@ -22,7 +22,7 @@ fn vector_ex00() {
 
 #[cfg(test)]
 #[test]
-fn matrix_ex00() {
+fn matrix() {
     use crate::basics::Matrix;
 
     //println!("===============Matrix Ex00===============");

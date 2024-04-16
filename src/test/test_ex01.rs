@@ -1,6 +1,6 @@
 #[cfg(test)]
 #[test]
-fn linear_combination_ex01() {
+fn linear_combination() {
     use crate::basics::Vector;
     use crate::basics::linear_combination;
 
