@@ -7,6 +7,8 @@ pub trait Fma {
 	fn sfma(&mut self, a: Self, b: Self);
 }
 
+
+
 impl<T: MulAdd<Output = T> + Copy> Fma for T {
 	fn fma(a: T, b: T, c: T) -> T {
 		a.mul_add(b, c)

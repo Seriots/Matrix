@@ -1,8 +1,11 @@
 #![allow(dead_code)]
-use std::{fmt::Display, ops::{AddAssign, MulAssign, SubAssign}};
+use std::{fmt::Display, ops::{AddAssign, MulAssign, Sub, SubAssign}};
 
 use crate::Vector;
 use crate::fma::Fma;
+
+use crate::basics::linear_interpolation::Lerp;
+
 
 #[derive(Clone, Debug, Default)]
 pub struct Matrix<K> {
@@ -66,6 +69,20 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
                 self.matrix[i][j] *= a.clone();
             }
         }
+    }
+}
+
+impl<K: Clone + Default + Fma + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
+    fn lerp(self, v: Self, t: f32) -> Self {
+       let mut res = self.clone();
+       let shape = self.shape();
+
+        for i in 0..shape.0 {
+            for j in 0..shape.1 {
+                res.matrix[i][j] = Fma::fma(v.matrix[i][j].clone() - self.matrix[i][j].clone(), t.into(), self.matrix[i][j].clone()); 
+            }
+        }
+        return res;
     }
 }
 

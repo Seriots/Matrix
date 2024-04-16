@@ -1,4 +1,0 @@
-[ ] Sanitize all type management and create one traits to check all necessary traits
-[ ] add fma for all potential type
-[ ] Slice all my works into differents folders, at least : fma, test, basics
-[ ] Move linear_combination into a new file
