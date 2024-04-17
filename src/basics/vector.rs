@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign}};
+use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign, Range}};
 
 use num_traits::pow;
 
@@ -33,7 +33,7 @@ impl<K: Clone + Default + Fma> Vector<K> {
         }
         for i in 0..shape.1 {
             matrix.push(Vec::new());
-            matrix[i].append(&mut self.vector[(i*shape.1)..(i*shape.1 + shape.0)].to_vec());
+            matrix[i].append(&mut self[(i*shape.1)..(i*shape.1 + shape.0)].to_vec());
         }
         return Matrix::from(matrix)
     }
@@ -124,6 +124,9 @@ impl<K: Clone + Default + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output =
     }
 }
 
+// ------------------------------------------------------------------------- //
+/// Implementing accesor => [] operator
+
 impl<K> Index<usize> for Vector<K> {
     type Output = K;
 
@@ -138,6 +141,23 @@ impl<K> IndexMut<usize> for Vector<K> {
     }
 }
 
+impl<K> Index<Range<usize>> for Vector<K> {
+    type Output = [K];
+
+    fn index(&self, range: Range<usize>) -> &Self::Output {
+        &self.vector[range]
+    }
+}
+
+impl<K> IndexMut<Range<usize>> for Vector<K> {
+    fn index_mut(&mut self, range: Range<usize>) -> &mut Self::Output {
+        &mut self.vector[range]
+    }
+}
+
+// ------------------------------------------------------------------------- //
+
+/// Implementing Display for Vector
 impl<K: Clone + Default + Fma + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut all: String = String::new();

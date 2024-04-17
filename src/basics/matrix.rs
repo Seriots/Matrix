@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Sub, SubAssign}};
+use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
 use crate::Vector;
 use crate::fma::Fma;
@@ -86,6 +86,9 @@ impl<K: Clone + Default + Fma + Sub<Output = K> + From<f32>> Lerp for Matrix<K> 
     }
 }
 
+// ------------------------------------------------------------------------- //
+/// Implementing Index and IndexMut for Matrix => accssor []
+
 impl<K> Index<usize> for Matrix<K> {
     type Output = Vec<K>;
 
@@ -113,6 +116,37 @@ impl<K> IndexMut<(usize, usize)> for Matrix<K> {
         &mut self.matrix[index.0][index.1]
     }
 }
+
+impl<K> Index<Range<usize>> for Matrix<K> {
+    type Output = [Vec<K>];
+
+    fn index(&self, range: Range<usize>) -> &Self::Output {
+        &self.matrix[range]
+    }
+}
+
+impl<K> IndexMut<Range<usize>> for Matrix<K> {
+    fn index_mut(&mut self, range: Range<usize>) -> &mut Self::Output {
+        &mut self.matrix[range]
+    }
+}
+
+impl<K> Index<(Range<usize>, Range<usize>)> for Matrix<K> {
+    type Output = [Vec<K>];
+
+    fn index(&self, range:(Range<usize>, Range<usize>)) -> &Self::Output {
+        &self.matrix[range.0][range.1]
+    }
+}
+
+impl<K> IndexMut<(Range<usize>, Range<usize>)> for Matrix<K> {
+    fn index_mut(&mut self, range: (Range<usize>, Range<usize>)) -> &mut Self::Output {
+        &mut self.matrix[range.0][range.1]
+    }
+}
+
+// ------------------------------------------------------------------------- //
+/// Implementing Display for matrix
 
 impl<K: Clone + Default + Fma + Display> Display for Matrix<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
