@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{fmt::Display, ops::{AddAssign, MulAssign, Sub, SubAssign}};
+use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Sub, SubAssign}};
 
 use crate::Vector;
 use crate::fma::Fma;
@@ -23,18 +23,18 @@ impl<K: Clone + Default + Fma> Matrix<K> {
     }
 
     pub fn shape(&self) -> (usize, usize) {
-        return (self.matrix[0].len(), self.matrix.len())
+        return (self[0].len(), self.matrix.len())
     }
 
     pub fn is_square(&self) -> bool {
-        return self.matrix[0].len() == self.matrix.len()
+        return self[0].len() == self.matrix.len()
     }
 
     pub fn to_vector(&self) -> Vector<K> {
         let mut vector: Vec<K> = Vec::new();
 
         for i in 0..self.matrix.len() {
-            vector.append(&mut self.matrix[i].clone());
+            vector.append(&mut self[i].clone());
         }
         return Vector::from(vector);
     }
@@ -47,7 +47,7 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
         }
         for i in 0..self.shape().0 {
             for j in 0..self.shape().1 {
-                self.matrix[i][j] += v.matrix[i][j].clone();
+                self[i][j] += v[i][j].clone();
             }
         }
     }
@@ -58,7 +58,7 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
         }
         for i in 0..self.shape().0 {
             for j in 0..self.shape().1 {
-                self.matrix[i][j] -= v.matrix[i][j].clone();
+                self[i][j] -= v[i][j].clone();
             }
         }
     }
@@ -66,7 +66,7 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
     pub fn scl(&mut self, a: K) {
         for i in 0..self.shape().0 {
             for j in 0..self.shape().1 {
-                self.matrix[i][j] *= a.clone();
+                self[i][j] *= a.clone();
             }
         }
     }
@@ -79,10 +79,38 @@ impl<K: Clone + Default + Fma + Sub<Output = K> + From<f32>> Lerp for Matrix<K> 
 
         for i in 0..shape.0 {
             for j in 0..shape.1 {
-                res.matrix[i][j] = Fma::fma(v.matrix[i][j].clone() - self.matrix[i][j].clone(), t.into(), self.matrix[i][j].clone()); 
+                res[i][j] = Fma::fma(v[i][j].clone() - self[i][j].clone(), t.into(), self[i][j].clone()); 
             }
         }
         return res;
+    }
+}
+
+impl<K> Index<usize> for Matrix<K> {
+    type Output = Vec<K>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.matrix[index]
+    }
+}
+
+impl<K> IndexMut<usize> for Matrix<K> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.matrix[index]
+    }
+}
+
+impl<K> Index<(usize, usize)> for Matrix<K> {
+    type Output = K;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.matrix[index.0][index.1]
+    }
+}
+
+impl<K> IndexMut<(usize, usize)> for Matrix<K> {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.matrix[index.0][index.1]
     }
 }
 
@@ -96,8 +124,8 @@ impl<K: Clone + Default + Fma + Display> Display for Matrix<K> {
         for i in 0..shape.0 {
             for j in 0..shape.1 {
                 if i == 0 { max_size.push(0); } 
-                if self.matrix[i][j].to_string().len() > max_size[j] {
-                    max_size[j] = self.matrix[i][j].to_string().len();
+                if self[i][j].to_string().len() > max_size[j] {
+                    max_size[j] = self[i][j].to_string().len();
                 }
             }
         }
@@ -105,7 +133,7 @@ impl<K: Clone + Default + Fma + Display> Display for Matrix<K> {
         for i in 0..shape.0 {
             all_rows += "[ ";
             for j in 0..shape.1 {
-                all_rows += &format!("{:>max$} ", &self.matrix[i][j], max=max_size[j]);
+                all_rows += &format!("{:>max$} ", &self[i][j], max=max_size[j]);
             }
             all_rows += "]";
             if i != shape.0 - 1 {

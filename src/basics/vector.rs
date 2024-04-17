@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign}};
+use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign}};
 
 use num_traits::pow;
 
@@ -47,7 +47,7 @@ where f32: From<K> {
             panic!("Size are different")
         }
         for i in 0..self.size() {
-            self.vector[i] += v.vector[i].clone();
+            self[i] += v[i].clone();
         }
     }
 
@@ -56,13 +56,13 @@ where f32: From<K> {
             panic!("Size are different")
         }
         for i in 0..self.size() {
-            self.vector[i] -= v.vector[i].clone();
+            self[i] -= v[i].clone();
         }
     }
 
     pub fn scl(&mut self, a: K) {
         for i in 0..self.size() {
-            self.vector[i] *= a.clone(); 
+            self[i] *= a.clone(); 
         }
     }
 
@@ -70,7 +70,7 @@ where f32: From<K> {
         let mut result: K = K::default();
 
         for i in 0..self.size() {
-            result.sfma(self.vector[i].clone(), v.vector[i].clone());
+            result.sfma(self[i].clone(), v[i].clone());
         }
         return result;
     }
@@ -80,7 +80,7 @@ where f32: From<K> {
         let mut res = f32::default();
         
         for i in 0..self.size() {
-            let v: f32 = self.vector[i].clone().into();
+            let v: f32 = self[i].clone().into();
             res += v.max(-v);
         }
 
@@ -92,7 +92,7 @@ where f32: From<K> {
         let mut res = K::default();
 
         for i in 0..self.size() {
-            res.sfma(self.vector[i].clone(), self.vector[i].clone());
+            res.sfma(self[i].clone(), self[i].clone());
         }
         return f32::powf(res.into(), 0.5);
     }
@@ -103,7 +103,7 @@ where f32: From<K> {
         let mut res = f32::default();
         
         for i in 0..self.size() {
-            let v: f32 = self.vector[i].clone().into();
+            let v: f32 = self[i].clone().into();
             res = res.max(v.max(-v));
         }
 
@@ -112,15 +112,29 @@ where f32: From<K> {
 
 }
 
-impl<K: Clone + Default + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32> > Lerp for Vector<K> {
+impl<K: Clone + Default + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
 
         for i in 0..self.size() {
             //(v - u) * t + u
-            res.vector[i] = Fma::fma(v.vector[i].clone() - self.vector[i].clone(), t.into(), self.vector[i].clone()); 
+            res[i] = Fma::fma(v[i].clone() - self[i].clone(), t.into(), self[i].clone()); 
         }
         return res;
+    }
+}
+
+impl<K> Index<usize> for Vector<K> {
+    type Output = K;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.vector[index]
+    }
+}
+
+impl<K> IndexMut<usize> for Vector<K> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.vector[index]
     }
 }
 
@@ -129,12 +143,12 @@ impl<K: Clone + Default + Fma + Display> Display for Vector<K> {
         let mut all: String = String::new();
         let mut max_size = 0;
         for i in 0..self.size() {
-            if  self.vector[i].to_string().len() > max_size {
-                max_size = self.vector[i].to_string().len()
+            if  self[i].to_string().len() > max_size {
+                max_size = self[i].to_string().len()
             }
         }
         for i in 0..self.size() {
-            all += &format!("[{:>max$}]", self.vector[i], max=max_size);
+            all += &format!("[{:>max$}]", self[i], max=max_size);
             if i != self.size() -1 {
                 all += "\n";
             }
