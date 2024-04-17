@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign, Range}};
+use std::{cmp::max, default, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign}, process::Output};
 
 use num_traits::pow;
 
@@ -40,7 +40,7 @@ impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
 }
 
 
-impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Vector<K>
+impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mul<Output = K> + Sub<Output = K> + Add<Output = K> > Vector<K>
 {
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
@@ -110,13 +110,19 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Vec
         return res;
     }
 
-    pub fn angle_cos(&self, v: &Self) -> f32
+    pub fn angle_cos(u: &Vector<K>, v: &Vector<K>) -> f32
     {
-        
-        let dot: f32 = self.clone().dot(v.clone()).into_f32();
-        let norm: f32 = self.clone().norm() * v.clone().norm();
+        let dot: f32 = u.clone().dot(v.clone()).into_f32();
+        let norm: f32 = u.clone().norm() * v.clone().norm();
         
         return  dot / norm;
+    }
+
+    pub fn cross_product(u: &Vector<K>, v: &Vector<K>) -> Vector<K> {
+
+        return Vector::from(vec![u[1].clone() * v[2].clone() - u[2].clone() * v[1].clone(),
+                                        u[2].clone() * v[0].clone() - u[0].clone() * v[2].clone(),
+                                        u[0].clone() * v[1].clone() - u[1].clone() * v[0].clone()]);
     }
 
 }

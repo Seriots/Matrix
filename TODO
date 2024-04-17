@@ -1,3 +1,6 @@
 [x] try to implement [] accesor
 [x] Check what is triangle inequality
 [x] Check next 3 cvideo
+[ ] make my own assert with delta 
+[ ] reprendre a aprtir du dot product (produit scalaire)
+[ ] make equality accesor 
