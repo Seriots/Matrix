@@ -3,8 +3,8 @@
 #[cfg(test)]
 #[test]
 fn linear_interpolation() {
-    use crate::basics::Vector;
-    use crate::basics::linear_interpolation::lerp;
+    use crate::core::Vector;
+    use crate::core::linear_interpolation::lerp;
     use crate::Matrix;
 
     assert_eq!(lerp(0., 1., 0.), 0.);

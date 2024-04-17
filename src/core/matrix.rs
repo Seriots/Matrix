@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
-use crate::Vector;
-use crate::fma::Fma;
+use crate::{utils::IntoF32, Vector};
+use crate::utils::Fma;
 
-use crate::basics::linear_interpolation::Lerp;
+use crate::core::linear_interpolation::Lerp;
 
 
 #[derive(Clone, Debug, Default)]
@@ -12,7 +12,7 @@ pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
 
-impl<K: Clone + Default + Fma> Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     pub fn from(matrix: Vec<Vec<K>>) -> Self {
         for i in 0..matrix.len() {
             if matrix[i].len() != matrix[0].len() {
@@ -40,7 +40,7 @@ impl<K: Clone + Default + Fma> Matrix<K> {
     }
 }
 
-impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -72,7 +72,7 @@ impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Matrix<K> {
     }
 }
 
-impl<K: Clone + Default + Fma + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
        let shape = self.shape();
@@ -148,7 +148,7 @@ impl<K> IndexMut<(Range<usize>, Range<usize>)> for Matrix<K> {
 // ------------------------------------------------------------------------- //
 /// Implementing Display for matrix
 
-impl<K: Clone + Default + Fma + Display> Display for Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
         let mut all_rows: String = String::new();

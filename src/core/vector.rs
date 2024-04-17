@@ -4,16 +4,16 @@ use std::{cmp::max, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, Mu
 
 use num_traits::pow;
 
-use crate::Matrix;
-use crate::fma::Fma;
-use crate::basics::linear_interpolation::Lerp;
+use crate::{utils::IntoF32, Matrix};
+use crate::utils::Fma;
+use crate::core::linear_interpolation::Lerp;
 
 #[derive(Debug, Clone, Default)]
 pub struct Vector<K> {
     pub vector: Vec<K>,
 }
 
-impl<K: Clone + Default + Fma> Vector<K> {
+impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
     pub fn from(array: Vec<K>) -> Self {
         Self { vector: array }
     }
@@ -40,8 +40,8 @@ impl<K: Clone + Default + Fma> Vector<K> {
 }
 
 
-impl<K: Clone + Default + Fma + AddAssign + SubAssign + MulAssign> Vector<K>
-where f32: From<K> {
+impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Vector<K>
+{
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
             panic!("Size are different")
@@ -80,7 +80,7 @@ where f32: From<K> {
         let mut res = f32::default();
         
         for i in 0..self.size() {
-            let v: f32 = self[i].clone().into();
+            let v: f32 = self[i].clone().into_f32();
             res += v.max(-v);
         }
 
@@ -94,7 +94,7 @@ where f32: From<K> {
         for i in 0..self.size() {
             res.sfma(self[i].clone(), self[i].clone());
         }
-        return f32::powf(res.into(), 0.5);
+        return f32::powf(res.into_f32(), 0.5);
     }
 
     // Supremum norm (||v||∞)
@@ -103,16 +103,25 @@ where f32: From<K> {
         let mut res = f32::default();
         
         for i in 0..self.size() {
-            let v: f32 = self[i].clone().into();
+            let v: f32 = self[i].clone().into_f32();
             res = res.max(v.max(-v));
         }
 
         return res;
     }
 
+    pub fn angle_cos(&self, v: &Self) -> f32
+    {
+        
+        let dot: f32 = self.clone().dot(v.clone()).into_f32();
+        let norm: f32 = self.clone().norm() * v.clone().norm();
+        
+        return  dot / norm;
+    }
+
 }
 
-impl<K: Clone + Default + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
 
@@ -158,7 +167,7 @@ impl<K> IndexMut<Range<usize>> for Vector<K> {
 // ------------------------------------------------------------------------- //
 
 /// Implementing Display for Vector
-impl<K: Clone + Default + Fma + Display> Display for Vector<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut all: String = String::new();
         let mut max_size = 0;

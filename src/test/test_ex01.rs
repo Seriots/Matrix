@@ -1,8 +1,8 @@
 #[cfg(test)]
 #[test]
 fn linear_combination() {
-    use crate::basics::Vector;
-    use crate::basics::linear_combination;
+    use crate::core::Vector;
+    use crate::core::linear_combination;
 
     let e1 = Vector::from(vec![1., 0., 0.]);
     let e2 = Vector::from(vec![0., 1., 0.]);

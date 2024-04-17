@@ -2,7 +2,7 @@
 #[cfg(test)]
 #[test]
 fn vector() {
-    use crate::basics::Vector;
+    use crate::core::Vector;
 
     //println!("===============Vector Ex00===============");
     let mut u = Vector::from(vec![2., 3.]);
@@ -23,7 +23,7 @@ fn vector() {
 #[cfg(test)]
 #[test]
 fn matrix() {
-    use crate::basics::Matrix;
+    use crate::core::Matrix;
 
     //println!("===============Matrix Ex00===============");
     let mut u = Matrix::from(vec![
