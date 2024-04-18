@@ -8,7 +8,7 @@ use crate::{utils::IntoF32, Matrix};
 use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector<K> {
     pub vector: Vec<K>,
 }

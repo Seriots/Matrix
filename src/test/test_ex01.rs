@@ -12,6 +12,6 @@ fn linear_combination() {
     let test1 = linear_combination::<f32>(&[e1, e2, e3], &[10., -2., 0.5]);
     let test2 = linear_combination::<f32>(&[v1, v2], &[10., -2.]);
     
-    assert_eq!(test1.vector, vec![10., -2., 0.5]);
-    assert_eq!(test2.vector, vec![10., 0., 230.]);
+    assert_eq!(test1, Vector::from(&[10., -2., 0.5]));
+    assert_eq!(test2, Vector::from(&[10., 0., 230.]));
 }

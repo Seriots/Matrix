@@ -7,7 +7,7 @@ use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;
 
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
