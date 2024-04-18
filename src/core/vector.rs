@@ -2,8 +2,6 @@
 
 use std::{cmp::max, default, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign}, process::Output};
 
-use num_traits::{pow, real::Real, PrimInt};
-
 use crate::{utils::IntoF32, Matrix};
 use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;

@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
-use num_traits::{real::Real, PrimInt};
-
 use crate::{utils::IntoF32, Vector};
 use crate::utils::Fma;
 
@@ -14,7 +12,7 @@ pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Real> PartialEq for Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Matrix<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.shape() != other.shape() {
             return false;
