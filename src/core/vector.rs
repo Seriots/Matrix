@@ -13,13 +13,14 @@ pub struct Vector<K> {
     pub vector: Vec<K>,
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Real> PartialEq for Vector<K> {
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Vector<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() {
             return false;
         }
         for i in 0..self.size() {
-            if (self[i].clone() - other[i].clone()).abs().into_f32() > 1e-6 {
+            let a = (self[i].clone() - other[i].clone()).into_f32();
+            if a > 1e-6 || a < -1e-6 {
                 return false;
             }
         }

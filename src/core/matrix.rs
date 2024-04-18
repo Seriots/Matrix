@@ -19,9 +19,10 @@ impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Real> PartialEq for 
         if self.shape() != other.shape() {
             return false;
         }
-        for i in 0..self.shape().0 {
-            for j in 0..self.shape().1 {
-                if (self[i][j].clone() - other[i][j].clone()).abs().into_f32() > 1e-6 {
+        for i in 0..self.shape().1 {
+            for j in 0..self.shape().0 {
+                let a = (self[i][j].clone() - other[i][j].clone()).into_f32();
+                if a > 1e-6 || a < -1e-6 {
                     return false;
                 }
             }
