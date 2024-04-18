@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
+use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
 use num_traits::{real::Real, PrimInt};
 
@@ -144,7 +144,19 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Mat
         for i in 0..self.shape().0 {
             tr += self[i][i].clone();
         }
-        return tr
+        return tr;
+    }
+
+    pub fn transpose(&self) -> Matrix<K> {
+        
+        let mut new: Matrix<K> = Matrix::from_vec(vec![vec![K::default(); self.shape().1]; self.shape().0]);
+
+        for i in 0..self.shape().0 {
+            for j in 0..self.shape().1 {
+                new[i][j] = self[j][i].clone();
+            }
+        }
+        return new;
     }
 
 }
@@ -247,7 +259,7 @@ impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
                 all_rows += &format!("{:>max$} ", &self[i][j], max=max_size[j]);
             }
             all_rows += "]";
-            if i != shape.0 - 1 {
+            if i != shape.1 - 1 {
                 all_rows += "\n";
             }
         } 
