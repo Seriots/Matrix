@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
+use std::{fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
 use num_traits::{real::Real, PrimInt};
 
@@ -70,7 +70,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
+impl<K: Debug +Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -100,6 +100,41 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Mat
             }
         }
     }
+
+    pub fn mul_vec(&self, vec: &Vector<K>) -> Vector<K> {
+        let base_shape = self.shape();
+
+        if vec.size() != base_shape.0 {
+            panic!("Vector must have the same size than the number of columns")
+        }
+
+        let mut new = Vector::from_vec(vec![K::default(); base_shape.1]);
+        for i in 0..base_shape.0 {
+            for j in 0..base_shape.1 {
+                new[j].sfma(vec[i].clone(), self[j][i].clone());
+            }
+        }
+
+        return new;
+    }
+
+    pub fn mul_mat(&self, mat: &Matrix<K>) -> Matrix<K> {
+        let base_shape = self.shape();
+        let mut new: Matrix<K> = Matrix::from_vec(vec![vec![K::default(); mat.shape().0]; base_shape.1]);
+        
+        if mat.shape().1 != base_shape.0 {
+            panic!("Argument must have the same amount of rows than the amout of columns")
+        }
+        for k in 0..mat.shape().0 {
+            for i in 0..base_shape.0 {
+                for j in 0..base_shape.1 {
+                   new[j][k].sfma(mat[i][k].clone(), self[j][i].clone()); 
+                }
+            }
+        }
+        return new;
+    }
+
 }
 
 impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
@@ -185,18 +220,18 @@ impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
         let mut max_size: Vec<usize> = Vec::new();
         let shape = self.shape();
 
-        for i in 0..shape.0 {
-            for j in 0..shape.1 {
-                if i == 0 { max_size.push(0); } 
+        for i in 0..shape.1 {
+            for j in 0..shape.0 {
+                if i == 0 { max_size.push(0); }
                 if self[i][j].to_string().len() > max_size[j] {
                     max_size[j] = self[i][j].to_string().len();
                 }
             }
         }
 
-        for i in 0..shape.0 {
+        for i in 0..shape.1 {
             all_rows += "[ ";
-            for j in 0..shape.1 {
+            for j in 0..shape.0 {
                 all_rows += &format!("{:>max$} ", &self[i][j], max=max_size[j]);
             }
             all_rows += "]";
