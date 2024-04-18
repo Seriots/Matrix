@@ -7,3 +7,4 @@ pub mod test_ex04;
 pub mod test_ex05;
 pub mod test_ex06;
 pub mod test_ex07;
+pub mod test_ex08;

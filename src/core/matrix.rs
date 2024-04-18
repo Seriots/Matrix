@@ -71,7 +71,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Debug +Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
+impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -134,6 +134,17 @@ impl<K: Debug +Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssi
             }
         }
         return new;
+    }
+
+    pub fn trace(&self) -> K {
+        let mut tr: K = K::default();
+        if !self.is_square() {
+            panic!("This matrix is not a square")
+        }
+        for i in 0..self.shape().0 {
+            tr += self[i][i].clone();
+        }
+        return tr
     }
 
 }
