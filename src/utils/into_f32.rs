@@ -1,4 +1,4 @@
-pub struct MyF32(f32);
+pub struct MyF32(pub f32);
 
 impl Into<f32> for MyF32
 {

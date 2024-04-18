@@ -2,15 +2,29 @@
 
 use std::{cmp::max, default, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign}, process::Output};
 
-use num_traits::pow;
+use num_traits::{pow, real::Real, PrimInt};
 
 use crate::{utils::IntoF32, Matrix};
 use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default)]
 pub struct Vector<K> {
     pub vector: Vec<K>,
+}
+
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Real> PartialEq for Vector<K> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.size() != other.size() {
+            return false;
+        }
+        for i in 0..self.size() {
+            if (self[i].clone() - other[i].clone()).abs().into_f32() > 1e-6 {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 impl<K: Clone + Default + Fma + IntoF32> Vector<K> {

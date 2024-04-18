@@ -1,15 +1,33 @@
 #![allow(dead_code)]
 use std::{fmt::Display, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
 
+use num_traits::{real::Real, PrimInt};
+
 use crate::{utils::IntoF32, Vector};
 use crate::utils::Fma;
 
 use crate::core::linear_interpolation::Lerp;
 
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Default)]
 pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
+}
+
+impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Real> PartialEq for Matrix<K> {
+    fn eq(&self, other: &Self) -> bool {
+        if self.shape() != other.shape() {
+            return false;
+        }
+        for i in 0..self.shape().0 {
+            for j in 0..self.shape().1 {
+                if (self[i][j].clone() - other[i][j].clone()).abs().into_f32() > 1e-6 {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
 
 impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {

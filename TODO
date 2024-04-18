@@ -4,4 +4,4 @@
 [x] reprendre a aprtir du dot product (produit scalaire)
 [x] update the unlying creation conteneur
 [x] make equality accesor
-[ ] make my own assert with delta 
+[x] make my own assert with delta (used assert_float_eq) 
