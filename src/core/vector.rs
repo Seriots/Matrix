@@ -14,10 +14,13 @@ pub struct Vector<K> {
 }
 
 impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
-    pub fn from(array: Vec<K>) -> Self {
-        Self { vector: array }
+    pub fn from(vector: &[K]) -> Self {
+        Self { vector: vector.to_vec() }
     }
 
+    pub fn from_vec(vector: Vec<K>) -> Self {
+        Self { vector }
+    }
     pub fn size(&self) -> usize {
         return self.vector.len();
     }
@@ -35,7 +38,7 @@ impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
             matrix.push(Vec::new());
             matrix[i].append(&mut self[(i*shape.1)..(i*shape.1 + shape.0)].to_vec());
         }
-        return Matrix::from(matrix)
+        return Matrix::from_vec(matrix)
     }
 }
 
@@ -120,7 +123,7 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mu
 
     pub fn cross_product(u: &Vector<K>, v: &Vector<K>) -> Vector<K> {
 
-        return Vector::from(vec![u[1].clone() * v[2].clone() - u[2].clone() * v[1].clone(),
+        return Vector::from(&[u[1].clone() * v[2].clone() - u[2].clone() * v[1].clone(),
                                         u[2].clone() * v[0].clone() - u[0].clone() * v[2].clone(),
                                         u[0].clone() * v[1].clone() - u[1].clone() * v[0].clone()]);
     }

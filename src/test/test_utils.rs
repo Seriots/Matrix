@@ -4,18 +4,18 @@
 fn test_basics_matrix_vector() {
     use crate::core::Matrix;
 
-    let u = Matrix::from(vec![
-        vec![1., 2.],
-        vec![3., 4.],
-        vec![3., 4.],
+    let u = Matrix::from(&[
+        &[1., 2.],
+        &[3., 4.],
+        &[3., 4.],
     ]);
 
     let v = u.to_vector();
     let w = v.to_matrix((3, 2));
 
-    let a = Matrix::from(vec![
-        vec![1., 2.],
-        vec![4., 5.],
+    let a = Matrix::from(&[
+        &[1., 2.],
+        &[4., 5.],
     ]);
 
     assert_eq!(u.shape(), (2, 3));

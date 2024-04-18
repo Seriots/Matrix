@@ -13,7 +13,19 @@ pub struct Matrix<K> {
 }
 
 impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
-    pub fn from(matrix: Vec<Vec<K>>) -> Self {
+    pub fn from(matrix: &[&[K]]) -> Self {
+        let mut new_matrix: Vec<Vec<K>> = Vec::new();
+
+        for i in 0..matrix.len() {
+            if matrix[i].len() != matrix[0].len() {
+                panic!("All rows must have the same length");
+            }
+            new_matrix.push(matrix[i].to_vec());
+        }
+        Self { matrix: new_matrix }
+    }
+
+    pub fn from_vec(matrix: Vec<Vec<K>>) -> Self {
         for i in 0..matrix.len() {
             if matrix[i].len() != matrix[0].len() {
                 panic!("All rows must have the same length");
@@ -36,7 +48,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
         for i in 0..self.matrix.len() {
             vector.append(&mut self[i].clone());
         }
-        return Vector::from(vector);
+        return Vector::from_vec(vector);
     }
 }
 
