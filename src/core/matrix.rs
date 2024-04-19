@@ -157,6 +157,11 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Mat
         return new;
     }
 
+    pub fn row_echelon(&self) -> Matrix<K> {
+        
+        return Matrix::default();
+    }
+
 }
 
 impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
