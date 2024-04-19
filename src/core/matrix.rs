@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign}};
+use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign, Mul, Div, DivAssign, Neg}};
 
 use crate::{utils::IntoF32, Vector};
 use crate::utils::Fma;
@@ -69,7 +69,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Matrix<K> {
+impl<K: Display + Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -157,9 +157,61 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign> Mat
         return new;
     }
 
+    fn scale_row(&mut self, row_index: usize, scaler: K) {
+        for i in 0..self.shape().0 {
+            self[row_index][i] /= scaler.clone();
+        }
+    }
+
+    fn add_row(&mut self, row_index: usize, row_adder: Vec<K>, scaler: K) {
+        for i in 0..self.shape().0 {
+            self[row_index][i] += scaler.clone() * row_adder[i].clone();
+        }
+    }
+
+    fn swap_row(&mut self, row_one: usize, row_two: usize) {
+        let tmp = self[row_one].clone();
+        self[row_one] = self[row_two].clone();
+        self[row_two] = tmp;
+    }
+
     pub fn row_echelon(&self) -> Matrix<K> {
-        
-        return Matrix::default();
+        let mut new = self.clone();
+        let cols = self.shape().0;
+        let rows = self.shape().1;
+
+        let mut pivot_col: usize = 0;
+
+        for row in 0..rows {
+            for col in pivot_col..cols {
+                let mut swapped = false;
+                if new[row][col] == K::default() {
+                    println!("K default");
+                    for row_to_swap in (row + 1)..rows {
+                        if new[row_to_swap][col] != K::default() {
+                            new.swap_row(row, row_to_swap);
+                            swapped = true;
+                            break;
+                        }
+                        println!("{}\n", new);
+                    }
+                }
+                if swapped || new[row][col] != K::default() {
+                    println!("K pas default");
+                    pivot_col = col;
+                    new.scale_row(row, new[row][col].clone());
+                    for row_to_zero in 0..rows {
+                        if row_to_zero == row || new[row_to_zero][col] == K::default() {
+                            continue ;
+                        }
+                        new.add_row(row_to_zero, new[row].clone(), -(new[row_to_zero][col].clone() / new[row][col].clone()));
+                        println!("{}\n", new);
+                    }
+                    break ;
+                }
+            }
+        }
+        return new;
     }
 
 }
