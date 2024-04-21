@@ -1,18 +1,32 @@
 #![allow(dead_code)]
 use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, Add, SubAssign, Mul, Div, DivAssign, Neg}};
 
+use crate::utils::DefaultOne;
 use crate::{utils::IntoF32, Vector};
 use crate::utils::Fma;
+use std::cmp::min;
 
 use crate::core::linear_interpolation::Lerp;
+#[derive(Debug)]
+pub enum MatrixError {
+    SingularMatrix
+}
 
+impl Display for MatrixError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MatrixError::SingularMatrix => write!(f, "This matrix is singular")
+        }
+    }
+
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Matrix<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialEq for Matrix<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.shape() != other.shape() {
             return false;
@@ -29,7 +43,7 @@ impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Matrix<
     }
 }
 
-impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Matrix<K> {
     pub fn from(matrix: &[&[K]]) -> Self {
         let mut new_matrix: Vec<Vec<K>> = Vec::new();
 
@@ -69,7 +83,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Debug + Display + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
+impl<K: Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -247,9 +261,68 @@ impl<K: Debug + Display + Clone + Default + Fma + IntoF32 + AddAssign + Add<Outp
         }
     }
 
+    fn get_identity_matrix(&self) -> Matrix<K> {
+        if !self.is_square() {
+            panic!("The matrix is not a square")
+        }
+        let mut new = Matrix::from_vec(vec![vec![K::default(); self.shape().0]; self.shape().1]);
+        for i in 0..self.shape().0 {
+            new[i][i] = K::one();
+        }
+        return new;
+    }
+
+    pub fn inverse(&self) -> Result<Matrix<K>, MatrixError> {
+        let mut new = self.clone();
+        let mut identity = self.get_identity_matrix();
+        let cols = self.shape().0;
+        let rows = self.shape().1;
+
+        if self.determinant() == K::default() {
+            return Err(MatrixError::SingularMatrix)
+        }
+
+        let mut pivot_col: usize = 0;
+
+        for row in 0..rows {
+            for col in pivot_col..cols {
+                let mut swapped = false;
+                if new[row][col] == K::default() {
+                    for row_to_swap in (row + 1)..rows {
+                        if new[row_to_swap][col] != K::default() {
+                            identity.swap_row(row, row_to_swap);
+                            new.swap_row(row, row_to_swap);
+                            swapped = true;
+                            break;
+                        }
+                    }
+                }
+                if swapped || new[row][col] != K::default() {
+                    pivot_col = col;
+                    identity.scale_row(row, new[row][col].clone());
+                    new.scale_row(row, new[row][col].clone());
+                    for row_to_zero in 0..rows {
+                        if row_to_zero == row || new[row_to_zero][col] == K::default() {
+                            continue ;
+                        }
+                        identity.add_row(row_to_zero,
+                                    identity[row].clone(),
+                                    -(new[row_to_zero][col].clone() / new[row][col].clone())
+                                );
+                        new.add_row(row_to_zero,
+                                    new[row].clone(),
+                                    -(new[row_to_zero][col].clone() / new[row][col].clone())
+                                );
+                    }
+                    break ;
+                }
+            }
+        }
+        return Ok(identity);
+    }
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
        let shape = self.shape();
@@ -325,7 +398,7 @@ impl<K> IndexMut<(Range<usize>, Range<usize>)> for Matrix<K> {
 // ------------------------------------------------------------------------- //
 /// Implementing Display for matrix
 
-impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Matrix<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
         let mut all_rows: String = String::new();
@@ -335,8 +408,8 @@ impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
         for i in 0..shape.1 {
             for j in 0..shape.0 {
                 if i == 0 { max_size.push(0); }
-                if self[i][j].to_string().len() > max_size[j] {
-                    max_size[j] = self[i][j].to_string().len();
+                if min(self[i][j].to_string().len(), 7) > max_size[j] {
+                    max_size[j] = min(self[i][j].to_string().len(), 7);
                 }
             }
         }
@@ -344,7 +417,7 @@ impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Matrix<K> {
         for i in 0..shape.1 {
             all_rows += "[ ";
             for j in 0..shape.0 {
-                all_rows += &format!("{:>max$} ", &self[i][j], max=max_size[j]);
+                all_rows += &format!("{:>max$.4} ", &self[i][j], max=max_size[j]);
             }
             all_rows += "]";
             if i != shape.1 - 1 {

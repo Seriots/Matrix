@@ -2,7 +2,7 @@
 
 use std::{cmp::max, default, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign}, process::Output};
 
-use crate::{utils::IntoF32, Matrix};
+use crate::{utils::{DefaultOne, IntoF32}, Matrix};
 use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;
 
@@ -11,7 +11,7 @@ pub struct Vector<K> {
     pub vector: Vec<K>,
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Vector<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialEq for Vector<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() {
             return false;
@@ -26,7 +26,7 @@ impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K>> PartialEq for Vector<
     }
 }
 
-impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Vector<K> {
     pub fn from(vector: &[K]) -> Self {
         Self { vector: vector.to_vec() }
     }
@@ -56,7 +56,7 @@ impl<K: Clone + Default + Fma + IntoF32> Vector<K> {
 }
 
 
-impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mul<Output = K> + Sub<Output = K> + Add<Output = K> > Vector<K>
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mul<Output = K> + Sub<Output = K> + Add<Output = K> > Vector<K>
 {
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
@@ -143,7 +143,7 @@ impl<K: Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mu
 
 }
 
-impl<K: Clone + Default + Fma + IntoF32 + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
 
@@ -189,7 +189,7 @@ impl<K> IndexMut<Range<usize>> for Vector<K> {
 // ------------------------------------------------------------------------- //
 
 /// Implementing Display for Vector
-impl<K: Clone + Default + Fma + IntoF32 + Display> Display for Vector<K> {
+impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut all: String = String::new();
         let mut max_size = 0;
