@@ -7,12 +7,10 @@ use crate::core::*;
 
 fn main() {
     println!("Please run `cargo test`");
-
-    let mat = Matrix::from(&[
-        &[8., 5., -2., 4., 28.],
-        &[4., 2.5, 20., 4., -4.],
-        &[7., 5., 1., 4., 17.],
-        ]);
-    println!("{}", mat.row_echelon());
     
+    let u = Matrix::from(&[
+        &[4., 1.],
+        &[3., 1.],
+    ]);
+    println!("row echelon \n{}\n, det = {}", u.row_echelon(), u.determinant());
 }

@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, SubAssign, Mul, Div, DivAssign, Neg}};
+use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, Add, SubAssign, Mul, Div, DivAssign, Neg}};
 
 use crate::{utils::IntoF32, Vector};
 use crate::utils::Fma;
@@ -69,7 +69,7 @@ impl<K: Clone + Default + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Display + Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
+impl<K: Debug + Display + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -186,32 +186,65 @@ impl<K: Display + Clone + Default + Fma + IntoF32 + AddAssign + SubAssign + MulA
             for col in pivot_col..cols {
                 let mut swapped = false;
                 if new[row][col] == K::default() {
-                    println!("K default");
                     for row_to_swap in (row + 1)..rows {
                         if new[row_to_swap][col] != K::default() {
                             new.swap_row(row, row_to_swap);
                             swapped = true;
                             break;
                         }
-                        println!("{}\n", new);
                     }
                 }
                 if swapped || new[row][col] != K::default() {
-                    println!("K pas default");
                     pivot_col = col;
                     new.scale_row(row, new[row][col].clone());
                     for row_to_zero in 0..rows {
                         if row_to_zero == row || new[row_to_zero][col] == K::default() {
                             continue ;
                         }
-                        new.add_row(row_to_zero, new[row].clone(), -(new[row_to_zero][col].clone() / new[row][col].clone()));
-                        println!("{}\n", new);
+                        new.add_row(row_to_zero,
+                                    new[row].clone(),
+                                    -(new[row_to_zero][col].clone() / new[row][col].clone())
+                                );
                     }
                     break ;
                 }
             }
         }
         return new;
+    }
+
+    fn determinant_2d(mat: &Matrix<K>) -> K {
+        return Fma::fma(mat[0][0].clone(),  mat[1][1].clone(), -mat[0][1].clone() * mat[1][0].clone());
+    }
+
+    fn determinant_3d(mat: &Matrix<K>) -> K {
+        return Fma::fma(mat[0][0].clone(), Matrix::determinant_2d(&Matrix::from_vec(vec![mat[1][1..=2].to_vec(), mat[2][1..=2].to_vec()])), 
+               Fma::fma(-mat[0][1].clone(), Matrix::determinant_2d(&Matrix::from_vec(vec![vec![mat[1][0].clone(), mat[1][2].clone()], vec![mat[2][0].clone(), mat[2][2].clone()]])),
+                        mat[0][2].clone() * Matrix::determinant_2d(&Matrix::from_vec(vec![mat[1][0..=1].to_vec(), mat[2][0..=1].to_vec()])))
+                    );
+    }
+
+    fn determinant_4d(mat: &Matrix<K>) -> K {
+        return Fma::fma(mat[0][0].clone(), Matrix::determinant_3d(&Matrix::from_vec(vec![mat[1][1..=3].to_vec(), mat[2][1..=3].to_vec(), mat[3][1..=3].to_vec()])),
+               Fma::fma(-mat[0][1].clone(), Matrix::determinant_3d(&Matrix::from_vec(vec![vec![mat[1][0].clone(), mat[1][2].clone(), mat[1][3].clone()], vec![mat[2][0].clone(), mat[2][2].clone(), mat[2][3].clone()], vec![mat[3][0].clone(), mat[3][2].clone(), mat[3][3].clone()]])),
+               Fma::fma(mat[0][2].clone(), Matrix::determinant_3d(&Matrix::from_vec(vec![vec![mat[1][0].clone(), mat[1][1].clone(), mat[1][3].clone()], vec![mat[2][0].clone(), mat[2][1].clone(), mat[2][3].clone()], vec![mat[3][0].clone(), mat[3][1].clone(), mat[3][3].clone()]])),
+                        -mat[0][3].clone() * Matrix::determinant_3d(&Matrix::from_vec(vec![mat[1][0..=2].to_vec(), mat[2][0..=2].to_vec(), mat[3][0..=2].to_vec()])))
+                        )
+                    );
+    }
+
+    pub fn determinant(&self) -> K {
+        if !self.is_square() {
+            panic!("This matrix is not a square")
+        }
+        let shape = self.shape().0;
+        match shape {
+            1 => return self[0][0].clone(),
+            2 => return Matrix::determinant_2d(&self),
+            3 => return Matrix::determinant_3d(&self),
+            4 => return Matrix::determinant_4d(&self),
+            _ => panic!("The matrix size is greater than 4")
+        }
     }
 
 }

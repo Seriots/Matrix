@@ -9,3 +9,5 @@ pub mod test_ex06;
 pub mod test_ex07;
 pub mod test_ex08;
 pub mod test_ex09;
+pub mod test_ex10;
+pub mod test_ex11;
