@@ -454,8 +454,15 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Matr
         for i in 0..shape.1 {
             for j in 0..shape.0 {
                 if i == 0 { max_size.push(0); }
-                if min(self[i][j].to_string().len(), 7) > max_size[j] {
-                    max_size[j] = min(self[i][j].to_string().len(), 7);
+                if let Some(prec) = f.precision() {
+                    if min(self[i][j].to_string().len(), prec + 3) > max_size[j] {
+                        max_size[j] = min(self[i][j].to_string().len(), prec + 3);
+                    }
+                }
+                else {
+                    if self[i][j].to_string().len() > max_size[j] {
+                        max_size[j] = self[i][j].to_string().len();
+                    }
                 }
             }
         }
@@ -463,7 +470,12 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Matr
         for i in 0..shape.1 {
             all_rows += "[ ";
             for j in 0..shape.0 {
-                all_rows += &format!("{:>max$.4} ", &self[i][j], max=max_size[j]);
+                if let Some(prec) = f.precision() {
+                    all_rows += &format!("{:>max$.prec$} ", &self[i][j], max=max_size[j], prec=prec);
+                }
+                else {
+                    all_rows += &format!("{:>max$} ", &self[i][j], max=max_size[j]);
+                }
             }
             all_rows += "]";
             if i != shape.1 - 1 {
