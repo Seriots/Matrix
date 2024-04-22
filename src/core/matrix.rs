@@ -278,6 +278,10 @@ impl<K: Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssi
         let cols = self.shape().0;
         let rows = self.shape().1;
 
+        if !self.is_square() {
+            panic!("The matrix is not a square")
+        }
+
         if self.determinant() == K::default() {
             return Err(MatrixError::SingularMatrix)
         }
@@ -320,7 +324,49 @@ impl<K: Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssi
         }
         return Ok(identity);
     }
+
+    pub fn rank(&self) -> usize {
+        let mut new = self.clone();
+        let cols = self.shape().0;
+        let rows = self.shape().1;
+
+        let mut pivot_col: usize = 0;
+        let mut rank = 0;
+
+        for row in 0..rows {
+            for col in pivot_col..cols {
+                let mut swapped = false;
+                if new[row][col] == K::default() {
+                    for row_to_swap in (row + 1)..rows {
+                        if new[row_to_swap][col] != K::default() {
+                            new.swap_row(row, row_to_swap);
+                            swapped = true;
+                            break;
+                        }
+                    }
+                }
+                if swapped || new[row][col] != K::default() {
+                    pivot_col = col;
+                    new.scale_row(row, new[row][col].clone());
+                    rank += 1;
+                    for row_to_zero in 0..rows {
+                        if row_to_zero == row || new[row_to_zero][col] == K::default() {
+                            continue ;
+                        }
+                        new.add_row(row_to_zero,
+                                    new[row].clone(),
+                                    -(new[row_to_zero][col].clone() / new[row][col].clone())
+                                );
+                    }
+                    break ;
+                }
+            }
+        }
+
+        return rank;
+    }
 }
+
 
 impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
     fn lerp(self, v: Self, t: f32) -> Self {

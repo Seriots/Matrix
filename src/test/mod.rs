@@ -11,3 +11,5 @@ pub mod test_ex08;
 pub mod test_ex09;
 pub mod test_ex10;
 pub mod test_ex11;
+pub mod test_ex12;
+pub mod test_ex13;
