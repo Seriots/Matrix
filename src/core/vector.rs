@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use std::{cmp::max, default, fmt::Display, ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Range, Sub, SubAssign}, process::Output};
+use std::{cmp::{max, Ordering}, default, fmt::Display, ops::{Add, AddAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign}, process::Output};
 
-use crate::{utils::{DefaultOne, IntoF32}, Matrix};
+use crate::{utils::NumberUtils, Matrix};
 use crate::utils::Fma;
 use crate::core::linear_interpolation::Lerp;
 
@@ -11,14 +11,13 @@ pub struct Vector<K> {
     pub vector: Vec<K>,
 }
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialEq for Vector<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Sub<Output = K>> PartialEq for Vector<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.size() != other.size() {
             return false;
         }
         for i in 0..self.size() {
-            let a = (self[i].clone() - other[i].clone()).into_f32();
-            if a > 1e-6 || a < -1e-6 {
+            if !(self[i].clone() - other[i].clone()).approx_zero() {
                 return false;
             }
         }
@@ -26,7 +25,7 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialE
     }
 }
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Vector<K> {
+impl<K: Clone + Default + NumberUtils + Fma> Vector<K> {
     pub fn from(vector: &[K]) -> Self {
         Self { vector: vector.to_vec() }
     }
@@ -56,7 +55,7 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Vector<K> {
 }
 
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + AddAssign + SubAssign + MulAssign + Mul<Output = K> + Sub<Output = K> + Add<Output = K> > Vector<K>
+impl<K: Clone + Default + NumberUtils + Fma + AddAssign + SubAssign + MulAssign + Mul<Output = K> + Sub<Output = K> + Add<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq + PartialOrd> Vector<K>
 {
     pub fn add(&mut self, v: &Vector<K>) {
         if self.size() != v.size() {
@@ -92,44 +91,48 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + AddAssign + SubAssign + M
     }
 
     //Taxicab norm or Manhattan norm (||v||1)
-    pub fn norm_1(&self) -> f32 {
-        let mut res = f32::default();
+    pub fn norm_1(&self) -> K {
+        let mut res = K::default();
         
         for i in 0..self.size() {
-            let v: f32 = self[i].clone().into_f32();
-            res += v.max(-v);
+            let v: K = self[i].clone();
+            res += v.absolute();
         }
 
         return res;
     }
 
     //Euclidean norm (||v||2)
-    pub fn norm(&self) -> f32 {
+    pub fn norm(&self) -> K {
         let mut res = K::default();
 
         for i in 0..self.size() {
             res.sfma(self[i].clone(), self[i].clone());
         }
-        return f32::powf(res.into_f32(), 0.5);
+        return res.power(0.5);
     }
 
     // Supremum norm (||v||∞)
-    pub fn norm_inf(&self) -> f32 {
+    pub fn norm_inf(&self) -> K {
 
-        let mut res = f32::default();
+        let mut res = K::default();
         
         for i in 0..self.size() {
-            let v: f32 = self[i].clone().into_f32();
-            res = res.max(v.max(-v));
+            let v: K = self[i].clone();
+            res = if res.partial_cmp(&v.absolute()) == Some(Ordering::Less) {
+                v.absolute()
+            } else {
+                res
+            };
         }
 
         return res;
     }
 
-    pub fn angle_cos(u: &Vector<K>, v: &Vector<K>) -> f32
+    pub fn angle_cos(u: &Vector<K>, v: &Vector<K>) -> K
     {
-        let dot: f32 = u.clone().dot(v.clone()).into_f32();
-        let norm: f32 = u.clone().norm() * v.clone().norm();
+        let dot: K = u.clone().dot(v.clone());
+        let norm: K = u.clone().norm() * v.clone().norm();
         
         return  dot / norm;
     }
@@ -143,7 +146,7 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + AddAssign + SubAssign + M
 
 }
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Sub<Output = K> + Add<Output = K> + Mul<Output = K> + From<f32>> Lerp for Vector<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
 
@@ -189,7 +192,7 @@ impl<K> IndexMut<Range<usize>> for Vector<K> {
 // ------------------------------------------------------------------------- //
 
 /// Implementing Display for Vector
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Vector<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Display> Display for Vector<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut all: String = String::new();
         let mut max_size = 0;

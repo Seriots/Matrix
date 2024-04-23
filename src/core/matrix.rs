@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, Add, SubAssign, Mul, Div, DivAssign, Neg}};
 
-use crate::utils::DefaultOne;
-use crate::{utils::IntoF32, Vector};
+use crate::utils::NumberUtils;
+use crate::Vector;
 use crate::utils::Fma;
 use std::cmp::min;
 
@@ -18,7 +18,6 @@ impl Display for MatrixError {
             MatrixError::SingularMatrix => write!(f, "This matrix is singular")
         }
     }
-
 }
 
 #[derive(Clone, Debug, Default)]
@@ -26,15 +25,14 @@ pub struct Matrix<K> {
     pub matrix: Vec<Vec<K>>,
 }
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialEq for Matrix<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Sub<Output = K>> PartialEq for Matrix<K> {
     fn eq(&self, other: &Self) -> bool {
         if self.shape() != other.shape() {
             return false;
         }
         for i in 0..self.shape().1 {
             for j in 0..self.shape().0 {
-                let a = (self[i][j].clone() - other[i][j].clone()).into_f32();
-                if a > 1e-6 || a < -1e-6 {
+                if !(self[i][j].clone() - other[i][j].clone()).approx_zero() {
                     return false;
                 }
             }
@@ -43,7 +41,7 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K>> PartialE
     }
 }
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Matrix<K> {
+impl<K: Clone + Default + NumberUtils + Fma> Matrix<K> {
     pub fn from(matrix: &[&[K]]) -> Self {
         let mut new_matrix: Vec<Vec<K>> = Vec::new();
 
@@ -83,7 +81,7 @@ impl<K: Clone + Default + DefaultOne + Fma + IntoF32> Matrix<K> {
     }
 }
 
-impl<K: Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
+impl<K: Debug + Display + NumberUtils + Clone + Default + Fma + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq> Matrix<K> {
     pub fn add(&mut self, v: &Matrix<K>) {
         if self.shape() != v.shape() {
             panic!("Size are different")
@@ -368,7 +366,7 @@ impl<K: Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssi
 }
 
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Sub<Output = K> + From<f32>> Lerp for Matrix<K> {
     fn lerp(self, v: Self, t: f32) -> Self {
        let mut res = self.clone();
        let shape = self.shape();
@@ -444,7 +442,7 @@ impl<K> IndexMut<(Range<usize>, Range<usize>)> for Matrix<K> {
 // ------------------------------------------------------------------------- //
 /// Implementing Display for matrix
 
-impl<K: Clone + Default + DefaultOne + Fma + IntoF32 + Display> Display for Matrix<K> {
+impl<K: Clone + Default + NumberUtils + Fma + Display> Display for Matrix<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
         let mut all_rows: String = String::new();

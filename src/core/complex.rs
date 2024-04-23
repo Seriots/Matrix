@@ -5,12 +5,11 @@ use std::fmt::Result;
 
 use num_traits::pow;
 
-use crate::utils::DefaultOne;
+use crate::utils::NumberUtils;
 use crate::utils::Fma;
-use crate::utils::IntoF32;
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Complex {
 	real: f32,
 	imag: f32,
@@ -28,9 +27,23 @@ impl Display for Complex {
 	}
 }
 
-impl DefaultOne for Complex {
+impl NumberUtils for Complex {
 	fn one() -> Self {
 		Self::new(1.0, 0.0)
+	}
+
+	fn approx_zero(&self) -> bool {
+		self.real.approx_zero() && self.imag.approx_zero()
+	}
+
+	fn absolute(&self) -> Self {
+		Self::new(self.real.absolute(), self.imag.absolute())
+	}
+
+	fn power(&self, n: f32) -> Self {
+		let r = (self.real * self.real + self.imag * self.imag).power(n / 2.0);
+		let theta = n * (self.imag / self.real).atan();
+		Self::new(r * theta.cos(), r * theta.sin())
 	}
 }
 
@@ -130,9 +143,48 @@ impl Fma for Complex {
 	}
 }
 
-impl IntoF32 for Complex {
-	fn into_f32(self) -> f32 {
-		(self.real * self.real + self.imag * self.imag).sqrt()
+impl PartialEq for Complex {
+	fn eq(&self, other: &Self) -> bool {
+		self.real == other.real && self.imag == other.imag
 	}
 }
-//Debug + Display + DefaultOne + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq
+
+impl Eq for Complex {}
+
+impl PartialOrd for Complex {
+	fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+		if self.real < other.real {
+			return Some(std::cmp::Ordering::Less);
+		} else if self.real > other.real {
+			return Some(std::cmp::Ordering::Greater);
+		} else {
+			if self.imag < other.imag {
+				return Some(std::cmp::Ordering::Less);
+			} else if self.imag > other.imag {
+				return Some(std::cmp::Ordering::Greater);
+			} else {
+				return Some(std::cmp::Ordering::Equal);
+			}
+		}
+	}
+}
+
+impl Ord for Complex {
+	fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+		if self.real < other.real {
+			return std::cmp::Ordering::Less;
+		} else if self.real > other.real {
+			return std::cmp::Ordering::Greater;
+		} else {
+			if self.imag < other.imag {
+				return std::cmp::Ordering::Less;
+			} else if self.imag > other.imag {
+				return std::cmp::Ordering::Greater;
+			} else {
+				return std::cmp::Ordering::Equal;
+			}
+		}
+	}
+}
+
+//Debug + Display + NumberUtils + Clone + Default + Fma + IntoF32 + AddAssign + Add<Output = K> + SubAssign + Sub<Output = K> + MulAssign + DivAssign + Mul<Output = K> + Div<Output = K> + Neg<Output = K> + PartialEq

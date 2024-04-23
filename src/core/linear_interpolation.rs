@@ -4,7 +4,7 @@ use num_traits::{ops::mul_add::MulAdd, Num, PrimInt};
 
 use std::ops::Sub;
 
-use crate::utils::{Fma, IntoF32, MyF32};
+use crate::utils::Fma;
 
 pub trait Lerp: Sized {
     fn lerp(self, v: Self, t: f32) -> Self;
