@@ -4,6 +4,20 @@ use crate::Matrix;
 use std::fs::File;
 use std::io::Write;
 
+/*
+Start 
+[1, 0, 0, 0]
+[0, 1, 0, 0]
+[0, 0, -1, 0]
+[0, 0, 0, 1]
+
+[1, 0, 0, 0]
+[0, 1, 0, 0]
+[0, 0, -f/(f-n), -1]
+[0, 0, -(f*n)/(f-n), 0]
+
+*/
+
 pub fn projection(fov: f32, ratio: f32, near: f32, far: f32) -> Matrix<f32> {
     let f = 1. / (fov * 0.5 * PI / 180.).tan();
     let nf = 1.  / (far - near);
@@ -14,6 +28,7 @@ pub fn projection(fov: f32, ratio: f32, near: f32, far: f32) -> Matrix<f32> {
         &[0., 0., -far * nf, -1.],
         &[0., 0., -far * near * nf, 0.],
     ])
+
 }
 
 pub fn save_matrix(matrix: &Matrix<f32>, filename: &str) {
