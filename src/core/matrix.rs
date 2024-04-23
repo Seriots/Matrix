@@ -1,7 +1,7 @@
 #![allow(dead_code)]
-use std::{default, fmt::{Debug, Display}, ops::{AddAssign, Index, IndexMut, MulAssign, Range, Sub, Add, SubAssign, Mul, Div, DivAssign, Neg}};
+use std::{any::TypeId, default, fmt::{Debug, Display}, ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign}};
 
-use crate::utils::NumberUtils;
+use crate::{utils::NumberUtils, Complex};
 use crate::Vector;
 use crate::utils::Fma;
 use std::cmp::min;
@@ -377,6 +377,21 @@ impl<K: Clone + Default + NumberUtils + Fma + Sub<Output = K> + From<f32>> Lerp 
             }
         }
         return res;
+    }
+}
+
+impl Matrix<Complex> {
+    pub fn transpose_complex(&self) -> Matrix<Complex> {
+        
+        let mut new: Matrix<Complex> = Matrix::from_vec(vec![vec![Complex::default(); self.shape().1]; self.shape().0]);
+
+        for i in 0..self.shape().0 {
+            for j in 0..self.shape().1 {
+                new[i][j] = self[j][i].clone();
+                new[i][j].conjugate();
+            }
+        }
+        return new;
     }
 }
 

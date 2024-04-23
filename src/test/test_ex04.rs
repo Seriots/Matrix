@@ -29,7 +29,6 @@ fn norm() {
 fn norm_complex() {
     use crate::Vector;
     use crate::Complex;
-    use assert_float_eq::*;
 
     let u = Vector::from(&[Complex::new(0., 1.), Complex::new(0., 1.), Complex::new(0., 1.)]);
     assert_eq!(u.norm_1(), Complex::new(0., 3.));

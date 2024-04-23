@@ -21,6 +21,10 @@ impl Complex {
 	pub fn new(real: f32, imag: f32) -> Self {
 		Self { real, imag }
 	}
+
+	pub fn conjugate(&mut self) {
+		self.imag *= -1.0;
+	}
 }
 
 impl Display for Complex {
@@ -157,7 +161,7 @@ impl Fma for Complex {
 
 impl PartialEq for Complex {
 	fn eq(&self, other: &Self) -> bool {
-		self.real == other.real && self.imag == other.imag
+		(self.real - other.real).abs() < 1e-6 && (self.imag - other.imag).abs() < 1e-6
 	}
 }
 

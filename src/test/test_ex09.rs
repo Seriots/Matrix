@@ -57,3 +57,22 @@ fn test_transpose() {
         &[5., 5., 5., 5., 10.],
     ]));
 }
+
+#[cfg(test)]
+#[test]
+fn transpose_complex() {
+    use crate::Matrix;
+    use crate::Complex;
+
+    let u = Matrix::from(&[
+        &[Complex::new(1., 4.), Complex::new(0., 2.), Complex::new(0., -5.)],
+        &[Complex::new(2., -3.), Complex::new(3., 12.), Complex::new(4., 4.)],
+    ]);
+
+    assert_eq!(u.transpose_complex(), Matrix::from(&[
+        &[Complex::new(1., -4.), Complex::new(2., 3.)],
+        &[Complex::new(0., -2.), Complex::new(3., -12.)],
+        &[Complex::new(0., 5.), Complex::new(4., -4.)],
+    ]));
+
+}

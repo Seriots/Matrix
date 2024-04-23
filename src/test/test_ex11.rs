@@ -88,3 +88,34 @@ fn test_determinant_panic2() {
 	]);
 	assert_eq!(u.determinant(), -174.0);
 }
+
+#[cfg(test)]
+#[test]
+fn test_determinant_complex() {
+	use crate::Matrix;
+	use crate::Complex;
+
+	let mat = Matrix::from(&[
+		&[Complex::new(8., 2.), Complex::new(5., -3.)],
+		&[Complex::new(6., 1.), Complex::new(2.5, 1.)],
+	]);
+	assert_eq!(mat.determinant(), Complex::new(-15., 26.));
+
+	let mat = Matrix::from(&[
+		&[Complex::new(8., 2.), Complex::new(5., -3.), Complex::new(-2., 1.)],
+		&[Complex::new(4., 1.), Complex::new(2.5, 1.), Complex::new(20., 1.)],
+		&[Complex::new(7., 1.), Complex::new(5., 1.), Complex::new(1., 1.)],
+	]);
+
+	assert_eq!(mat.determinant(), Complex::new(4.5, -661.5));
+
+	let mat = Matrix::from(&[
+		&[Complex::new(8., 2.), Complex::new(5., -3.), Complex::new(-2., 1.), Complex::new(7., 1.)],
+		&[Complex::new(4., 1.), Complex::new(2.5, 1.), Complex::new(20., 1.), Complex::new(18., 1.)],
+		&[Complex::new(7., 1.), Complex::new(5., 1.), Complex::new(1., 1.), Complex::new(4., 1.)],
+		&[Complex::new(10., 1.), Complex::new(8., 1.), Complex::new(2., 1.), Complex::new(9., 1.)],
+	]);
+
+	assert_eq!(mat.determinant(), Complex::new(-495., -1833.5));
+
+}
