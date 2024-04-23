@@ -109,7 +109,7 @@ impl<K: Clone + Default + NumberUtils + Fma + AddAssign + SubAssign + MulAssign 
         for i in 0..self.size() {
             res.sfma(self[i].clone(), self[i].clone());
         }
-        return res.power(0.5);
+        return res.squarert();
     }
 
     // Supremum norm (||v||∞)

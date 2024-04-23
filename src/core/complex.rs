@@ -1,4 +1,5 @@
 
+use std::f32::consts::PI;
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Result;
@@ -7,6 +8,7 @@ use num_traits::pow;
 
 use crate::utils::NumberUtils;
 use crate::utils::Fma;
+use crate::Lerp;
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 
 #[derive(Debug, Clone, Copy)]
@@ -40,10 +42,20 @@ impl NumberUtils for Complex {
 		Self::new(self.real.absolute(), self.imag.absolute())
 	}
 
-	fn power(&self, n: f32) -> Self {
-		let r = (self.real * self.real + self.imag * self.imag).power(n / 2.0);
-		let theta = n * (self.imag / self.real).atan();
+	fn power(&self, n: usize) -> Self {
+		let r = (self.real * self.real + self.imag * self.imag).powf(n as f32 / 2.);
+		let theta = (self.imag / self.real).atan() * n as f32;
 		Self::new(r * theta.cos(), r * theta.sin())
+	}
+
+	fn squarert(&self) -> Self {
+		let r = (self.real * self.real + self.imag * self.imag).powf(0.5).powf(0.5);
+		let theta = (self.imag / self.real).atan() / 2.;
+		if self.real < 0.0 {
+			Self::new(r * theta.sin(), r * theta.cos())
+		} else {
+			Self::new(r * theta.cos(), r * theta.sin())
+		}
 	}
 }
 
@@ -184,6 +196,24 @@ impl Ord for Complex {
 				return std::cmp::Ordering::Equal;
 			}
 		}
+	}
+}
+
+impl Into<f32> for Complex {
+	fn into(self) -> f32 {
+		self.real
+	}
+}
+
+impl From<f32> for Complex {
+	fn from(f: f32) -> Self {
+		Self::new(f, 0.0)
+	}
+}
+
+impl Lerp for Complex {
+	fn lerp(self, v: Self, t: f32) -> Self {
+		Fma::fma(v - self, t.into(), self)
 	}
 }
 
