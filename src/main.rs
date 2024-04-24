@@ -6,9 +6,9 @@ mod test;
 use crate::core::*;
 
 fn main() {
-    println!("Please run `cargo test`");
+    println!("This main is for the projection matrix, please run `cargo test` instead");
 
-    let proj_mat = projection(90., 1., 0.01, 20.);
+    let proj_mat = projection(90., 1., 0., 20.);
     save_matrix(&proj_mat, "proj");
 }
 
